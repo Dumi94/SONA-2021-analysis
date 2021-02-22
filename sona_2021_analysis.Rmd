@@ -1,0 +1,27 @@
+---
+title: "SONA ANalysis"
+output: html_notebook
+date: 22-02-2021
+author: "Siyabonga Africa"
+---
+
+This project looks to analyze the State of the Nation Address (SONA) for 2021 by President Cyril Ramaphosa. The PDF document will be scraped and analyzed for trends and patterns with the goal extrapolating the findings to previous SONA speeches.
+
+```{r - packages}
+library(pdftools)
+library(tidytext)
+```
+
+I used this article as the basis of loading PDF documents into RStudio (https://data.library.virginia.edu/reading-pdf-files-into-r-for-text-mining/) 
+
+```{r - data load}
+sona_pdf <- pdf_ocr_text(
+  'SONA_2021.pdf',
+  pages = NULL,
+  opw = "",
+  upw = "",
+  language = "eng",
+  dpi = 600
+)
+```
+
