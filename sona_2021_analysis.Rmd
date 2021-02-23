@@ -10,6 +10,9 @@ This project looks to analyze the State of the Nation Address (SONA) for 2021 by
 ```{r - packages}
 library(pdftools)
 library(tidytext)
+library(tm)
+library(dplyr)
+library(tidyr)
 ```
 
 I used this article as the basis of loading PDF documents into RStudio (https://data.library.virginia.edu/reading-pdf-files-into-r-for-text-mining/) 
@@ -23,5 +26,16 @@ sona_pdf <- pdf_ocr_text(
   language = "eng",
   dpi = 600
 )
+
+typeof(sona_pdf)
+```
+After scraping the pdf document the next step is to turn it into a corpus using tidytext tools. First I need to convert the character vector into a dataframe before turning it into tidy text data set.
+
+```{r - tidytext_corpus}
+sona_df <- as_tibble(sona_pdf)
+sona_df
+
+sona_df %>%
+  unnest_tokens(word, value)
 ```
 
