@@ -13,6 +13,7 @@ library(tidytext)
 library(tm)
 library(dplyr)
 library(tidyr)
+library(stringr)
 ```
 
 I used this article as the basis of loading PDF documents into RStudio (https://data.library.virginia.edu/reading-pdf-files-into-r-for-text-mining/) 
@@ -29,13 +30,24 @@ sona_pdf <- pdf_ocr_text(
 
 typeof(sona_pdf)
 ```
-After scraping the pdf document the next step is to turn it into a corpus using tidytext tools. First I need to convert the character vector into a dataframe before turning it into tidy text data set.
+After scraping the pdf document the next step is to turn it into a corpus using tidytext tools. First I need to convert the character vector into a data frame before turning it into tidy text data set.
 
 ```{r - tidytext_corpus}
 sona_df <- as_tibble(sona_pdf)
-sona_df
+sona_df <- sona_df[2:32,]
 
-sona_df %>%
+sona_df <- str_remove(sona_df, "[VII]")
+sona_df <- as_tibble(sona_df)
+
+sona_df <- sona_df %>%
   unnest_tokens(word, value)
+```
+
+Next I want to start analyzing the text of the speech. I will start by first counting the frequency of the words. First I need to remove stop words.
+
+```{r word_freq}
+sona_df %>% 
+  anti_join(stop_words) %>%
+  count(word, sort = TRUE)
 ```
 
