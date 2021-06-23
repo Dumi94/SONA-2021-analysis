@@ -1,5 +1,5 @@
 ---
-title: "SONA ANalysis"
+title: "SONA Analysis"
 output: html_notebook
 date: 22-02-2021
 author: "Siyabonga Africa"
@@ -14,6 +14,10 @@ library(tm)
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(tesseract)
+library(ggplot2)
+library(wordcloud)
+library(dendextend)
 ```
 
 I used this article as the basis of loading PDF documents into RStudio (https://data.library.virginia.edu/reading-pdf-files-into-r-for-text-mining/) 
@@ -49,5 +53,109 @@ Next I want to start analyzing the text of the speech. I will start by first cou
 sona_df %>% 
   anti_join(stop_words) %>%
   count(word, sort = TRUE)
+```
+
+This is a joint exercise where we analyze the SONA speech of president Cyril Ramaphosa, the text miners will be Dumi and Siya, I will do word clouding and dendograms to analyze word frequencies mentioned the most by the President whilst Siya will do topic modelling and probably sentiment analysis to assess which sections in his speech did He(Cyril) mostly emphasize on.
+```{r word_count_plot}
+sona_counts <- sona_df %>%
+  count(word) %>%
+  arrange(desc(n))
+ggplot(
+  sona_counts, aes(x=word, y= n)
+) +
+  geom_col()
+
+#filter the data
+sona_counts2 <- sona_df %>% 
+  count(word)%>%
+  filter(n > 100) %>%
+  arrange(desc(n))
+
+#use co-ord_flip to visualize the data thus far
+ggplot(
+  sona_counts2, aes(x=word, y=n) 
+) +
+  geom_col() +
+  coord_flip() +
+  ggtitle("SONA word counts")
+
+#improve word plot
+custom_stop_words <- tribble(
+ ~word,  ~lexicon,
+ "to",   "CUSTOM",
+ "the",  "CUSTOM",
+ "of",   "CUSTOM",
+ "n",    "CUSTOM",
+ "in",   "CUSTOM",
+ "and",  "CUSTOM",
+ "a",    "CUSTOM",
+ "vil",  "CUSTOM",
+ "nwe",  "CUSTOM",
+ "nto",  "CUSTOM",
+ "nthis","CUSTOM",
+ "nthe", "CUSTOM",
+ "nit",  "CUSTOM",
+ "nin",  "CUSTOM",
+ "nas",  "CUSTOM",
+ "nand", "CUSTOM",
+ "south","CUSTOM"
+)
+
+stop_words2 <- stop_words %>%
+  bind_rows(custom_stop_words)
+
+#removing stop words and visualizing
+tidy_sona <- sona_df %>% 
+  anti_join(stop_words2) %>%
+  count(word, sort = TRUE)
+
+#plot the word plot graph again
+sona_count3 <- tidy_sona %>%
+  count(word) %>%
+  filter (n > 10) %>%
+  arrange(desc(n))
+
+#plot
+ggplot(sona_count3,
+       aes(x=word, y=n)) + 
+  geom_col() +
+  coord_flip() +
+  ggtitle("Review Sona speech")
+
+#word-cloud
+word_counts <- tidy_sona %>%
+  count(word)
+
+wordcloud(
+  words = word_counts$word,
+  freq = word_counts$n,
+  max.words = 10,
+  colors = "blue"
+)
+  
+```
+
+
+
+
+```{r N-grams}
+#Perform clustering
+sona_dist <- dist(head(tidy_sona))
+
+#convert to hierarchical cluster
+sona_hc <- hclust(sona_dist)
+
+#Convert matrix to dendogram
+sona_hcd <- as.dendrogram(sona_hc)
+
+#color branches
+sona_hcd <- branches_attr_by_labels(sona_hcd, c(1:6), "blue")
+  
+#plot dendogram
+plot(sona_hcd, main = "SONA Speech 2021")
+
+
+
+
 ```
 
